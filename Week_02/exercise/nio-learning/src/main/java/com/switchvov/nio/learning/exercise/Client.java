@@ -15,11 +15,15 @@ import java.util.Objects;
  */
 public class Client {
     public static void main(String[] args) throws IOException {
+        // 创建一个client
         OkHttpClient client = new OkHttpClient.Builder().build();
+        // 创建一个request
         Request request = new Request.Builder()
                 .url("http://localhost:8801")
                 .build();
+        // 同步执行请求
         Response resp = client.newCall(request).execute();
+        // 输出请求接口
         System.out.println(Objects.requireNonNull(resp.body()).string());
     }
 }

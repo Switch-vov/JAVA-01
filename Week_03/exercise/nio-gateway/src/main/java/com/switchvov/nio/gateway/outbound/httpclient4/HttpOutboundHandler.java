@@ -4,6 +4,7 @@ package com.switchvov.nio.gateway.outbound.httpclient4;
 import com.switchvov.nio.gateway.filter.HeaderHttpResponseFilter;
 import com.switchvov.nio.gateway.filter.HttpRequestFilter;
 import com.switchvov.nio.gateway.filter.HttpResponseFilter;
+import com.switchvov.nio.gateway.outbound.GatewayOutboundHandler;
 import com.switchvov.nio.gateway.router.HttpEndpointRouter;
 import com.switchvov.nio.gateway.router.RandomHttpEndpointRouter;
 import io.netty.buffer.Unpooled;
@@ -34,7 +35,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
-public class HttpOutboundHandler {
+public class HttpOutboundHandler implements GatewayOutboundHandler {
 
     private CloseableHttpAsyncClient httpclient;
     private ExecutorService proxyService;
@@ -44,7 +45,6 @@ public class HttpOutboundHandler {
     HttpEndpointRouter router = new RandomHttpEndpointRouter();
 
     public HttpOutboundHandler(List<String> backends) {
-
         this.backendUrls = backends.stream().map(this::formatUrl).collect(Collectors.toList());
 
         int cores = Runtime.getRuntime().availableProcessors();
@@ -74,6 +74,7 @@ public class HttpOutboundHandler {
         return backend.endsWith("/") ? backend.substring(0, backend.length() - 1) : backend;
     }
 
+    @Override
     public void handle(final FullHttpRequest fullRequest, final ChannelHandlerContext ctx, HttpRequestFilter filter) {
         String backendUrl = router.route(this.backendUrls);
         final String url = backendUrl + fullRequest.uri();

@@ -2,6 +2,8 @@ package com.switchvov.nio.gateway;
 
 
 import com.switchvov.nio.gateway.inbound.HttpInboundServer;
+import io.netty.util.internal.logging.InternalLoggerFactory;
+import io.netty.util.internal.logging.Slf4JLoggerFactory;
 
 import java.util.Arrays;
 
@@ -19,7 +21,6 @@ public class NettyServerApplication {
 //          //  http://localhost:8888/api/hello  ==> gateway API
 //          //  http://localhost:8088/api/hello  ==> backend service
         // java -Xmx512m gateway-server-0.0.1-SNAPSHOT.jar  #作为后端服务
-
 
         // 这是多个后端url走随机路由的例子
         String proxyServers = System.getProperty("proxyServers", "http://localhost:8801,http://localhost:8802");

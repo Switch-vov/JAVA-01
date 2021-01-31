@@ -220,6 +220,83 @@ public class HttpInboundHandler extends ChannelInboundHandlerAdapter {
 
 **1.（必做）** 实现过滤器。
 
+目前过滤器的整体设计是，在inbound对request进行过滤，在outbound对response进行过滤。
+
+想到的另一种方案是：过滤器采用责任链模式，有先后关系和责任之分。
+
+RequestFilter
+
+```java
+package com.switchvov.nio.gateway.filter;
+
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.FullHttpRequest;
+
+/**
+ * request过滤器
+ */
+public interface HttpRequestFilter {
+    /**
+     * 对request进行过滤操作
+     *
+     * @param request Netty封装的Request对象
+     * @param ctx     channel的上下文
+     */
+    void filter(FullHttpRequest request, ChannelHandlerContext ctx);
+}
+```
+
+```java
+package com.switchvov.nio.gateway.filter;
+
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.HttpHeaders;
+
+public class HeaderHttpRequestFilter implements HttpRequestFilter {
+    @Override
+    public void filter(FullHttpRequest fullRequest, ChannelHandlerContext ctx) {
+        HttpHeaders headers = fullRequest.headers();
+        headers.set("version", "1");
+    }
+}
+```
+
+ResponseFilter
+
+```java
+package com.switchvov.nio.gateway.filter;
+
+import io.netty.handler.codec.http.FullHttpResponse;
+
+/**
+ * response过滤器
+ */
+public interface HttpResponseFilter {
+    /**
+     * 对response进行过滤操作
+     *
+     * @param response Netty封装的Response对象
+     */
+    void filter(FullHttpResponse response);
+}
+```
+
+```java
+package com.switchvov.nio.gateway.filter;
+
+import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpHeaders;
+
+public class HeaderHttpResponseFilter implements HttpResponseFilter {
+    @Override
+    public void filter(FullHttpResponse response) {
+        HttpHeaders headers = response.headers();
+        headers.set("version", "2");
+    }
+}
+```
+
 **2.（选做）** 实现路由。
 
 **3.（选做）** 跑一跑课上的各个例子，加深对多线程的理解

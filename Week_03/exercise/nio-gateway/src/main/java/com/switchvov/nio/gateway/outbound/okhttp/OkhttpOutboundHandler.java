@@ -96,7 +96,6 @@ public class OkhttpOutboundHandler implements GatewayOutboundHandler {
         Request request = new Request.Builder()
                 .url(url)
                 .addHeader(HTTP.CONN_DIRECTIVE, HTTP.CONN_KEEP_ALIVE)
-                .addHeader("mao", inbound.headers().get("mao"))
                 .build();
         okHttpClient.newCall(request).enqueue(new Callback() {
             @Override

@@ -103,3 +103,9 @@ ConcGCThreads的默认值则为：
 - ParallelGCThreads = 9~12时，ConcGCThreads = 3
 - ParallelGCThreads = 13~16时，ConcGCThreads = 4
 
+## 打印JVM参数
+
+```bash
+# 最终参数值 命令行参数 初始参数值
+-XX:+PrintFlagsFinal -XX:+PrintCommandLineFlags -XX:+PrintFlagsInitial
+```

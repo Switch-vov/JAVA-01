@@ -4,6 +4,128 @@
 
 **1.（必做）** 搭建一个 3 节点 Kafka 集群，测试功能和性能；实现 spring kafka 下对 kafka 集群的操作，将代码提交到 github。
 
+1. 下载`kafka`，下载地址：[kafka_2.12-2.6.0.tgz](https://archive.apache.org/dist/kafka/2.6.0/kafka_2.12-2.6.0.tgz)
+2. 将如下三个文件放在`kafka_2.12-2.6.0/config`下：
+    - [kafka9001.properties](exercise/kafka-cluster/kafka9001.properties)
+    - [kafka9002.properties](exercise/kafka-cluster/kafka9002.properties)
+    - [kafka9003.properties](exercise/kafka-cluster/kafka9003.properties)
+3. 在`kafka_2.12-2.6.0/config`目录下，分别使用如下命令启动
+```shell
+./bin/kafka-server-start.sh kafka9001.properties
+./bin/kafka-server-start.sh kafka9002.properties
+./bin/kafka-server-start.sh kafka9003.properties
+```
+4. 使用`spring kafka`操作`kafka`集群
+
+项目地址：[kafka-spring-demo](exercise/kafka-spring-demo)
+
+引入依赖：
+
+```xml
+<dependency>
+   <groupId>org.springframework.boot</groupId>
+   <artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+
+<dependency>
+   <groupId>org.springframework.kafka</groupId>
+   <artifactId>spring-kafka</artifactId>
+</dependency>
+```
+添加配置文件：
+
+```yaml
+spring:
+  kafka:
+    bootstrap-servers:
+      - "localhost:9001"
+      - "localhost:9002"
+      - "localhost:9003"
+    consumer:
+      group-id: GID_TEST_SWITCH_CONSUMER
+```
+
+生产：
+```java
+package com.switchvov.kafka.demo.producer;
+
+import com.alibaba.fastjson.JSON;
+import com.switchvov.kafka.demo.domain.Order;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.SendResult;
+import org.springframework.stereotype.Service;
+import org.springframework.util.concurrent.ListenableFuture;
+import org.springframework.util.concurrent.ListenableFutureCallback;
+
+import java.math.BigDecimal;
+import java.util.concurrent.ExecutionException;
+
+/**
+ * @author switch
+ * @since 2021/4/23
+ */
+@Service
+@Slf4j
+public class KafkaSpringProducerService {
+    private final KafkaTemplate<String, String> kafkaTemplate;
+
+    public KafkaSpringProducerService(
+            KafkaTemplate<String, String> kafkaTemplate
+    ) {
+        this.kafkaTemplate = kafkaTemplate;
+    }
+
+    public void sendTestMessage() throws ExecutionException, InterruptedException {
+        for (int i = 0; i < 10; i++) {
+            Order order = new Order().setId(i).setAmount(BigDecimal.ONE).setType(1);
+            ListenableFuture<SendResult<String, String>> future = kafkaTemplate.send("test_switch", JSON.toJSONString(order));
+            future.addCallback(new ListenableFutureCallback<SendResult<String, String>>() {
+                @Override
+                public void onFailure(Throwable throwable) {
+                    log.error("发送消息失败, 消息:{}", order, throwable);
+                }
+
+                @Override
+                public void onSuccess(SendResult<String, String> sendResult) {
+                    log.info("发送消息成功, 消息:{}, 结果:{}", order, sendResult.toString());
+                }
+            });
+            future.get();
+        }
+    }
+}
+```
+
+消费：
+```java
+package com.switchvov.kafka.demo.consumer;
+
+import com.alibaba.fastjson.JSON;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.stereotype.Component;
+
+/**
+ * @author switch
+ * @since 2021/4/23
+ */
+@Component
+@Slf4j
+public class KafkaSpringConsumerListener {
+
+    @KafkaListener(topics = "test_switch")
+    public void listener(ConsumerRecord<String, String> data) {
+        log.info("消费消息成功,topic:{},消息:{},record:{}",
+                data.topic(),
+                JSON.parseObject(data.value()),
+                data
+        );
+    }
+}
+```
+
 **2.（选做）** 安装 kafka-manager 工具，监控 kafka 集群状态。
 
 **3.（挑战☆）** 演练本课提及的各种生产者和消费者特性。

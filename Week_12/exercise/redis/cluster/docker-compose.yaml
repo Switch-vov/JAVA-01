@@ -1,0 +1,99 @@
+version: '3'
+
+networks:
+  redis_cluster:
+    ipam:
+      config:
+      - subnet: 192.168.48.0/24
+
+services:
+  redis_16380:
+    image: redis:6.2.2
+    command: ['redis-server', '--appendonly yes', '--cluster-enabled yes']
+    expose:
+      - 16380
+    ports:
+      - "16380:6379"
+    volumes:
+      - "./config/16380:/etc/redis"
+      - "./data/16380:/data"
+    networks: 
+      redis_cluster: 
+    sysctls:
+      # 必要的内核参数
+      net.core.somaxconn: '511'
+  redis_26380:
+    image: redis:6.2.2
+    command: ['redis-server', '--appendonly yes', '--cluster-enabled yes']
+    expose:
+      - 26380
+    ports:
+      - "26380:6379"
+    volumes:
+      - "./config/26380:/etc/redis"
+      - "./data/26380:/data"
+    networks: 
+      redis_cluster: 
+    sysctls:
+      # 必要的内核参数
+      net.core.somaxconn: '511'
+  redis_16381:
+    image: redis:6.2.2
+    command: ['redis-server', '--appendonly yes', '--cluster-enabled yes']
+    expose:
+      - 16381
+    ports:
+      - "16381:6379"
+    volumes:
+      - "./config/16381:/etc/redis"
+      - "./data/16381:/data"
+    networks: 
+      redis_cluster: 
+    sysctls:
+      # 必要的内核参数
+      net.core.somaxconn: '511'
+  redis_26381:
+    image: redis:6.2.2
+    command: ['redis-server', '--appendonly yes', '--cluster-enabled yes']
+    expose:
+        - 26381
+    ports:
+        - "26381:6379"
+    volumes:
+        - "./config/26381:/etc/redis"
+        - "./data/26381:/data"
+    networks: 
+      redis_cluster: 
+    sysctls:
+        # 必要的内核参数
+        net.core.somaxconn: '511'
+  redis_16382:
+    image: redis:6.2.2
+    command: ['redis-server', '--appendonly yes', '--cluster-enabled yes']
+    expose:
+        - 16382
+    ports:
+        - "16382:6379"
+    volumes:
+        - "./config/16382:/etc/redis"
+        - "./data/16382:/data"
+    networks: 
+      redis_cluster: 
+    sysctls:
+        # 必要的内核参数
+        net.core.somaxconn: '511'
+  redis_26382:
+    image: redis:6.2.2
+    command: ['redis-server', '--appendonly yes', '--cluster-enabled yes']
+    expose:
+        - 26382
+    ports:
+        - "26382:6379"
+    volumes:
+        - "./config/26382:/etc/redis"
+        - "./data/26382:/data"
+    networks: 
+      redis_cluster: 
+    sysctls:
+        # 必要的内核参数
+        net.core.somaxconn: '511'

@@ -1,0 +1,46 @@
+version: '3'
+
+services:
+  sentinel_6370:
+    image: redis:6.2.2
+    command: ['redis-server', '/etc/redis/redis.conf', '--sentinel']
+    expose:
+      - 6370
+    ports:
+      - "6370:6379"
+    volumes:
+      - "./config/sentinel_6370.conf:/etc/redis/redis.conf"
+      - "./data/sentinel_6370:/tmp"
+    sysctls:
+      # 必要的内核参数
+      net.core.somaxconn: '511'
+  sentinel_6371:
+    image: redis:6.2.2
+    command: ['redis-server', '/etc/redis/redis.conf', '--sentinel']
+    expose:
+      - 6371
+    ports:
+      - "6371:6379"
+    volumes:
+      - "./config/sentinel_6371.conf:/etc/redis/redis.conf"
+      - "./data/sentinel_6371:/tmp"
+    sysctls:
+      # 必要的内核参数
+      net.core.somaxconn: '511'
+  sentinel_6372:
+    image: redis:6.2.2
+    command: ['redis-server', '/etc/redis/redis.conf', '--sentinel']
+    expose:
+      - 6372
+    ports:
+      - "6372:6379"
+    volumes:
+      - "./config/sentinel_6372.conf:/etc/redis/redis.conf"
+      - "./data/sentinel_6372:/tmp"
+    sysctls:
+      # 必要的内核参数
+      net.core.somaxconn: '511'
+networks: 
+  default:
+    external: 
+      name: server_default

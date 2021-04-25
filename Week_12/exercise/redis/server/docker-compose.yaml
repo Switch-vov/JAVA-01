@@ -1,0 +1,42 @@
+version: '3'
+
+services:
+  redis_16370:
+    image: redis:6.2.2
+    command: ['redis-server', '--appendonly yes']
+    expose:
+      - 16370
+    ports:
+      - "16370:6379"
+    volumes:
+      - "./config/redis_16370.conf:/etc/redis/redis.conf"
+      - "./data/redis_16370:/data"
+    sysctls:
+      # 必要的内核参数
+      net.core.somaxconn: '511'
+  redis_26370:
+    image: redis:6.2.2
+    command: ['redis-server', '--appendonly yes', '--replicaof redis_16370 6379']
+    expose:
+      - 26370
+    ports:
+      - "26370:6379"
+    volumes:
+      - "./config/redis_26370.conf:/etc/redis/redis.conf"
+      - "./data/redis_26370:/data"
+    sysctls:
+      # 必要的内核参数
+      net.core.somaxconn: '511'
+  redis_36370:
+    image: redis:6.2.2
+    command: ['redis-server', '--appendonly yes', '--replicaof redis_16370 6379']
+    expose:
+      - 36370
+    ports:
+      - "36370:6379"
+    volumes:
+      - "./config/redis_36370.conf:/etc/redis/redis.conf"
+      - "./data/redis_36370:/data"
+    sysctls:
+      # 必要的内核参数
+      net.core.somaxconn: '511'

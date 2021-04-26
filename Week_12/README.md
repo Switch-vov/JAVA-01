@@ -64,6 +64,10 @@
 
 **1.（必做）** 搭建 ActiveMQ 服务，基于 JMS，写代码分别实现对于 queue 和 topic 的消息生产和消费，代码提交到 github。
 
+搭建服务: [activemq](exercise/activemq)
+
+JMS demo 项目：[activemq-jms-demo](exercise/activemq-jms-demo)
+
 **2.（选做）** 基于数据库的订单表，模拟消息队列处理订单：
 
 - 一个程序往表里写新订单，标记状态为未处理 (status=0);

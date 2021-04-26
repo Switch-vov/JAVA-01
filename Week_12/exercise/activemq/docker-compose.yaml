@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+  # references https://hub.docker.com/r/rmohr/activemq
+  activemq:
+    image: rmohr/activemq:5.15.9
+    expose: 
+      - 61616
+      - 8161
+    ports: 
+      - "61616:61616"
+      - "8161:8161"
+    volumes: 
+      - "./conf:/opt/activemq/conf"
+      - "./data:/opt/activemq/data"

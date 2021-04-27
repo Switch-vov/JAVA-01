@@ -1,0 +1,2 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+com.switchvov.springboot.demo.starter.autoconfigure.SchoolAutoConfiguration

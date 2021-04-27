@@ -119,6 +119,86 @@ public class UserConfiguration {
 
 **4.（必做）** 给前面课程提供的 Student/Klass/School 实现自动配置和 Starter。
 
+项目地址：[spring-bean-demo-starter](exercise/spring-boot-demo-starter)
+
+关键类：
+
+```java
+package com.switchvov.springboot.demo.starter.autoconfigure;
+
+import com.switchvov.springboot.demo.starter.domain.ISchool;
+import com.switchvov.springboot.demo.starter.domain.Klass;
+import com.switchvov.springboot.demo.starter.domain.School;
+import com.switchvov.springboot.demo.starter.domain.Student;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+/**
+ * @author switch
+ * @since 2021/4/27
+ */
+@Configuration
+public class SchoolAutoConfiguration {
+    @Bean
+    public ISchool school() {
+        return new School();
+    }
+
+    @Bean
+    public Klass klass() {
+        return new Klass();
+    }
+
+    @Bean("student100")
+    public Student student100() {
+        return new Student(1, "switch");
+    }
+
+    @Bean
+    public Student student() {
+        return new Student(2, "s");
+    }
+}
+```
+
+```properties
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+com.switchvov.springboot.demo.starter.autoconfigure.SchoolAutoConfiguration
+```
+
+
+项目地址：[spring-bean-demo-starter-demo](exercise/spring-boot-demo-starter-demo)
+
+关键类：
+
+```java
+package com.switchvov.springboot.demo.starter.demo;
+
+import com.switchvov.springboot.demo.starter.domain.ISchool;
+import com.switchvov.springboot.demo.starter.domain.School;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
+
+/**
+ * @author switch
+ * @since 2021/4/27
+ */
+@RunWith(SpringRunner.class)
+@SpringBootTest
+public class SpringBootDemoTests {
+    @Autowired
+    private ISchool school;
+
+    @Test
+    public void testDemo() {
+        school.ding();
+    }
+}
+```
+
 **5.（选做）** 学习 MyBatis-generator 的用法和原理，学会自定义 TypeHandler 处理复杂类型。
 
 **6.（必做）** 研究一下 JDBC 接口和数据库连接池，掌握它们的设计和用法：

@@ -123,6 +123,111 @@ public class RedisAtomicLong {
 
 **5.（必做）** 基于 Redis 的 PubSub 实现订单异步处理
 
+项目：[redis-pub-sub-demo](exercise/redis-pub-sub-demo)
+
+核心类：
+```java
+package com.switchvov.redis.pubsub.demo.pub;
+
+import com.alibaba.fastjson.JSON;
+import com.switchvov.redis.pubsub.demo.configure.RedisProperties;
+import com.switchvov.redis.pubsub.demo.domain.Order;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
+
+/**
+ * @author switch
+ * @since 2021/4/27
+ */
+@Component
+public class OrderPub {
+    private final StringRedisTemplate template;
+    private final RedisProperties redisProperties;
+
+    public OrderPub(
+            StringRedisTemplate template,
+            RedisProperties redisProperties
+    ) {
+        this.template = template;
+        this.redisProperties = redisProperties;
+    }
+
+    public void pubOrder() {
+        for (int i = 0; i < 100000; i++) {
+            Order order = new Order().setId(i).setType(i).setAmount(BigDecimal.valueOf(i));
+            template.convertAndSend(redisProperties.getTopic(), JSON.toJSONString(order));
+        }
+    }
+}
+```
+
+```java
+package com.switchvov.redis.pubsub.demo.sub;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.connection.Message;
+import org.springframework.data.redis.connection.MessageListener;
+import org.springframework.stereotype.Component;
+
+/**
+ * @author switch
+ * @since 2021/4/27
+ */
+@Component
+@Slf4j
+public class OrderSub implements MessageListener {
+
+    @Override
+    public void onMessage(Message message, byte[] pattern) {
+        log.info("message:{},channel:{},pattern:{}",
+                new String(message.getBody()),
+                new String(message.getChannel()),
+                new String(pattern)
+        );
+    }
+}
+```
+
+```java
+package com.switchvov.redis.pubsub.demo.configure;
+
+import com.switchvov.redis.pubsub.demo.sub.OrderSub;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.listener.ChannelTopic;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
+import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
+
+import java.util.Collections;
+
+/**
+ * @author switch
+ * @since 2021/4/27
+ */
+@Configuration
+public class RedisConfiguration {
+    @Bean
+    public MessageListenerAdapter messageListener() {
+        return new MessageListenerAdapter(new OrderSub());
+    }
+
+    @Bean
+    public RedisMessageListenerContainer customRedisContainer(
+            final RedisConnectionFactory factory,
+            final RedisProperties redisProperties
+    ) {
+        RedisMessageListenerContainer container = new RedisMessageListenerContainer();
+        container.setConnectionFactory(factory);
+        container.addMessageListener(messageListener(), Collections.singleton(new ChannelTopic(redisProperties.getTopic())));
+        return container;
+    }
+}
+```
+
+
 **6.（挑战☆）** 基于其他各类场景，设计并在示例代码中实现简单 demo：
 - 实现分数排名或者排行榜；
 - 实现全局 ID 生成；

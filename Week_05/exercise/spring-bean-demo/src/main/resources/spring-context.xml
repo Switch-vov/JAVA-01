@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+ 	http://www.springframework.org/schema/beans/spring-beans-4.3.xsd">
+
+    <!--1.使用构造注入方式装配User实例 -->
+    <bean id="user" class="com.switchvov.spring.bean.demo.domain.User" primary="true">
+        <constructor-arg index="0" value="1"/>
+        <constructor-arg index="1" value="switch"/>
+    </bean>
+
+    <!--2.使用设值注入方式装配User实例 -->
+    <bean id="userS" class="com.switchvov.spring.bean.demo.domain.User">
+        <property name="id" value="2"/>
+        <property name="name" value="s"/>
+    </bean>
+
+    <bean id="xmlUserService" class="com.switchvov.spring.bean.demo.service.UserService">
+        <property name="user" ref="userS"/>
+    </bean>
+
+    <!--3.使用自动装配-->
+    <bean id="xml2UserService" class="com.switchvov.spring.bean.demo.service.UserService" autowire="byName"/>
+</beans>

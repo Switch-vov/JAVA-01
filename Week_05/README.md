@@ -6,6 +6,99 @@
 
 **2.（必做）** 写代码实现 Spring Bean 的装配，方式越多越好（XML、Annotation 都可以）, 提交到 GitHub。
 
+项目地址：[spring-bean-demo](exercise/spring-bean-demo)
+
+基于XML
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+ 	http://www.springframework.org/schema/beans/spring-beans-4.3.xsd">
+
+    <!--1.使用构造注入方式装配User实例 -->
+    <bean id="user" class="com.switchvov.spring.bean.demo.domain.User" primary="true">
+        <constructor-arg index="0" value="1"/>
+        <constructor-arg index="1" value="switch"/>
+    </bean>
+
+    <!--2.使用设值注入方式装配User实例 -->
+    <bean id="userS" class="com.switchvov.spring.bean.demo.domain.User">
+        <property name="id" value="2"/>
+        <property name="name" value="s"/>
+    </bean>
+
+    <bean id="xmlUserService" class="com.switchvov.spring.bean.demo.service.UserService">
+        <property name="user" ref="userS"/>
+    </bean>
+
+    <!--3.使用自动装配-->
+    <bean id="xml2UserService" class="com.switchvov.spring.bean.demo.service.UserService" autowire="byName"/>
+</beans>
+```
+
+基于注解
+
+```java
+package com.switchvov.spring.bean.demo.service;
+
+import com.switchvov.spring.bean.demo.domain.User;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+
+/**
+ * @author switch
+ * @since 2021/4/27
+ */
+@Service("annotationUserService")
+@Slf4j
+public class UserService {
+    private User user;
+
+    public UserService() {
+
+    }
+
+    public UserService(User user) {
+        this.user = user;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public void printUser() {
+        log.info("UserService:{}, User:{}", this, user);
+    }
+}
+```
+
+```java
+package com.switchvov.spring.bean.demo.configuration;
+
+import com.switchvov.spring.bean.demo.domain.User;
+import com.switchvov.spring.bean.demo.service.UserService;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+/**
+ * @author switch
+ * @since 2021/4/27
+ */
+@Configuration
+public class UserConfiguration {
+    @Bean("beanUserService")
+    public UserService beanUserService() {
+        return new UserService(new User(3L, "sw"));
+    }
+}
+```
+
+
 **3.（选做）** 实现一个 Spring XML 自定义配置，配置一组 Bean，例如：Student/Klass/School。
 
 **4.（选做，会添加到高手附加题）**

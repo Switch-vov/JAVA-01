@@ -23,8 +23,103 @@
 
 **4.（必做）** 基于 Redis 封装分布式数据操作：
 
+项目：[redis-demo](exercise/redis-demo)
+
 - 在 Java 中实现一个简单的分布式锁；
+
+核心类：
+```java
+package com.switchvov.redis.demo.lock;
+
+import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * 分布式锁 helper类
+ *
+ * @author switch
+ * @since 2021/4/27
+ */
+@Slf4j
+public class CLockHelper implements ApplicationContextAware {
+    private static RedissonClient client;
+
+    public static RLock getLock(String lockKey) {
+        return client.getLock(lockKey);
+    }
+
+    public static boolean tryLock(RLock lock, int waitTime, int leaseTime, TimeUnit unit) {
+        try {
+            return lock.tryLock(waitTime, leaseTime, unit);
+        } catch (InterruptedException e) {
+            return false;
+        }
+    }
+
+    public static void unlock(RLock lock) {
+        if (lock.isHeldByCurrentThread()) {
+            lock.unlock();
+        }
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        client = applicationContext.getBean(RedissonClient.class);
+    }
+}
+```
+
 - 在 Java 中实现一个分布式计数器，模拟减库存。
+
+核心类：
+```java
+package com.switchvov.redis.demo.atomic;
+
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.core.BoundValueOperations;
+import org.springframework.data.redis.core.StringRedisTemplate;
+
+import java.util.Objects;
+
+/**
+ * @author switch
+ * @since 2021/4/27
+ */
+public class RedisAtomicLong {
+    private final StringRedisTemplate template;
+
+    public RedisAtomicLong(
+            RedisConnectionFactory factory
+    ) {
+        // 创建一个template
+        StringRedisTemplate template = new StringRedisTemplate();
+        template.setConnectionFactory(factory);
+        template.afterPropertiesSet();
+        this.template = template;
+    }
+
+    public Long inc(String key, long delta) {
+        BoundValueOperations<String, String> valueOps = template.boundValueOps(key);
+        return valueOps.increment(delta);
+    }
+
+    public Long dec(String key, long delta) {
+        return inc(key, -delta);
+    }
+
+    public Long get(String key) {
+        BoundValueOperations<String, String> valueOps = template.boundValueOps(key);
+        return Long.valueOf(Objects.requireNonNull(valueOps.get()));
+    }
+}
+```
+
 
 **5.（必做）** 基于 Redis 的 PubSub 实现订单异步处理
 

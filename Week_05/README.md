@@ -202,6 +202,18 @@ public class SpringBootDemoTests {
 
 **6.（必做）** 研究一下 JDBC 接口和数据库连接池，掌握它们的设计和用法：
 
+
+SQL：
+```sql
+CREATE TABLE `user` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `name` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '用户名',
+  `gender` tinyint(4) NOT NULL DEFAULT '1' COMMENT '性别:1:男;2:女',
+  `age` int(11) NOT NULL DEFAULT '0' COMMENT '年龄',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```
+
 1. 使用 JDBC 原生接口，实现数据库的增删改查操作。
 
 项目地址：[jdbc-demo](exercise/jdbc-demo)

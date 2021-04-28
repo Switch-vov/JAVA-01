@@ -16,6 +16,62 @@
 
 **2.（必做）** 基于电商交易场景（用户、商品、订单），设计一套简单的表结构，提交 DDL 的 SQL 文件到 Github（后面 2 周的作业依然要是用到这个表结构）。
 
+```sql
+CREATE TABLE `user`
+(
+    `id`          bigint(20)  NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    `user_id`     bigint(20)  NOT NULL COMMENT '用户ID',
+    `name`        varchar(20) NOT NULL DEFAULT '' COMMENT '用户名',
+    `create_time` timestamp   NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `create_by`   int(11)     NOT NULL DEFAULT '0' COMMENT '创建人',
+    `update_time` timestamp   NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `update_by`   int(11)     NOT NULL DEFAULT '0' COMMENT '更新人',
+    PRIMARY KEY (`id`) USING BTREE,
+    KEY `idx_user_id` (`user_id`) USING BTREE
+) ENGINE = InnoDB
+  AUTO_INCREMENT = 1
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci COMMENT ='用户表(简化)';
+```
+
+```sql
+CREATE TABLE `order`
+(
+    `id`          bigint(20)     NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    `order_id`    varchar(30)    NOT NULL DEFAULT '' COMMENT '订单ID',
+    `user_id`     bigint(20)     NOT NULL DEFAULT '0' COMMENT '用户ID',
+    `sku_number`  varchar(30)    NOT NULL DEFAULT '' COMMENT 'sku编码',
+    `total`       decimal(12, 2) NOT NULL DEFAULT '0.00' COMMENT '订单总金额',
+    `create_time` timestamp      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `create_by`   int(11)        NOT NULL DEFAULT '0' COMMENT '创建人',
+    `update_time` timestamp      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `update_by`   int(11)        NOT NULL DEFAULT '0' COMMENT '更新人',
+    PRIMARY KEY (`id`) USING BTREE,
+    KEY `idx_order_id` (`order_id`) USING BTREE,
+    KEY `idx_user_id` (`user_id`) USING BTREE,
+    KEY `idx_sku_number` (`sku_number`) USING BTREE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci COMMENT ='订单表(简化)';
+```
+
+```sql
+CREATE TABLE `sku`
+(
+    `id`          bigint(20)  NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    `sku_number`  varchar(30) NOT NULL DEFAULT '' COMMENT 'sku编码',
+    `title`       varchar(50) NOT NULL DEFAULT '' COMMENT '标题',
+    `create_time` timestamp   NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `create_by`   int(11)     NOT NULL DEFAULT '0' COMMENT '创建人',
+    `update_time` timestamp   NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `update_by`   int(11)     NOT NULL DEFAULT '0' COMMENT '更新人',
+    PRIMARY KEY (`id`) USING BTREE,
+    KEY `idx_sku_number` (`sku_number`) USING BTREE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci COMMENT ='商品sku表(简化)';
+```
+
 **3.（选做）** 尽可能多的从“常见关系数据库”中列的清单，安装运行，并使用上一题的 SQL 测试简单的增删改查。
 
 **4.（选做）** 基于上一题，尝试对各个数据库测试 100 万订单数据的增删改查性能。

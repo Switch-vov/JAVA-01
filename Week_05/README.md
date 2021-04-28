@@ -9,6 +9,7 @@
 项目地址：[spring-bean-demo](exercise/spring-bean-demo)
 
 基于XML
+
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -98,7 +99,6 @@ public class UserConfiguration {
 }
 ```
 
-
 **3.（选做）** 实现一个 Spring XML 自定义配置，配置一组 Bean，例如：Student/Klass/School。
 
 **4.（选做，会添加到高手附加题）**
@@ -166,7 +166,6 @@ org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
 com.switchvov.springboot.demo.starter.autoconfigure.SchoolAutoConfiguration
 ```
 
-
 项目地址：[spring-bean-demo-starter-demo](exercise/spring-boot-demo-starter-demo)
 
 关键类：
@@ -204,8 +203,401 @@ public class SpringBootDemoTests {
 **6.（必做）** 研究一下 JDBC 接口和数据库连接池，掌握它们的设计和用法：
 
 1. 使用 JDBC 原生接口，实现数据库的增删改查操作。
+
+项目地址：[jdbc-demo](exercise/jdbc-demo)
+
+关键类：
+
+```java
+package com.switchvov.jdbc.demo;
+
+import com.switchvov.jdbc.demo.domain.User;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+
+import java.io.Closeable;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Objects;
+
+/**
+ * @author switch
+ * @since 2021/4/28
+ */
+@Slf4j
+public class UserOperation implements Closeable {
+    private final Connection conn;
+
+    public UserOperation() throws SQLException {
+        conn = DriverManager.getConnection("jdbc:mysql://localhost/test", "root", "root");
+    }
+
+    @SneakyThrows
+    public User getById(Long id) {
+        User user = null;
+        try (ResultSet resultSet = conn.createStatement().executeQuery("select * from user where id = " + id)) {
+            if (resultSet.next()) {
+                user = new User()
+                        .setId(resultSet.getLong("id"))
+                        .setName(resultSet.getString("name"))
+                        .setGender(resultSet.getInt("gender"))
+                        .setAge(resultSet.getInt("age"));
+            }
+        }
+        return user;
+    }
+
+    @SneakyThrows
+    public boolean save(User user) {
+        Objects.requireNonNull(user);
+        try (Statement statement = conn.createStatement()) {
+            return statement.execute("insert into user(name, gender, age) values('" + user.getName()
+                    + "'," + user.getGender() + "," + user.getAge() + ")");
+        }
+    }
+
+    @SneakyThrows
+    public boolean deleteById(Long id) {
+        try (Statement statement = conn.createStatement()) {
+            return statement.executeUpdate("delete from user where id = " + id) == 1;
+        }
+    }
+
+    @SneakyThrows
+    public boolean updateById(User user) {
+        Objects.requireNonNull(user);
+        try (Statement statement = conn.createStatement()) {
+            return statement.executeUpdate("update user set name='" + user.getName()
+                    + "', gender=" + user.getGender() + ", age=" + user.getAge()
+                    + " where id=" + user.getId()) == 1;
+        }
+    }
+
+    @SneakyThrows
+    @Override
+    public void close() {
+        if (Objects.nonNull(conn)) {
+            conn.close();
+        }
+    }
+}
+```
+
 2. 使用事务，PrepareStatement 方式，批处理方式，改进上述操作。
+
+项目地址：[jdbc-demo](exercise/jdbc-demo)
+
+关键类：
+
+```java
+package com.switchvov.jdbc.demo;
+
+import com.switchvov.jdbc.demo.domain.User;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.CollectionUtils;
+
+import java.io.Closeable;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Collection;
+import java.util.Objects;
+
+/**
+ * @author switch
+ * @since 2021/4/28
+ */
+@Slf4j
+public class UserPrepareOperation implements Closeable {
+    private final Connection conn;
+
+    public UserPrepareOperation() throws SQLException {
+        conn = DriverManager.getConnection("jdbc:mysql://localhost/test", "root", "root");
+    }
+
+    @SneakyThrows
+    public User getById(Long id) {
+        User user = null;
+        try (PreparedStatement ps = conn.prepareStatement("select * from user where id = ?")) {
+            ps.setLong(1, id);
+            try (ResultSet resultSet = ps.executeQuery()) {
+                if (resultSet.next()) {
+                    user = new User()
+                            .setId(resultSet.getLong("id"))
+                            .setName(resultSet.getString("name"))
+                            .setGender(resultSet.getInt("gender"))
+                            .setAge(resultSet.getInt("age"));
+                }
+            }
+        }
+        return user;
+    }
+
+    @SneakyThrows
+    public boolean save(User user) {
+        Objects.requireNonNull(user);
+        String sql = "insert into user(name, gender, age) values(?,?,?)";
+        if (Objects.nonNull(user.getId())) {
+            sql = "insert into user(name, gender, age, id) values(?,?,?,?)";
+        }
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            if (Objects.nonNull(user.getId())) {
+                ps.setLong(4, user.getId());
+            }
+            ps.setString(1, user.getName());
+            ps.setInt(2, user.getGender());
+            ps.setInt(3, user.getAge());
+            return ps.execute();
+        }
+    }
+
+    @SneakyThrows
+    public boolean deleteById(Long id) {
+        try (PreparedStatement ps = conn.prepareStatement("delete from user where id = ?")) {
+            ps.setLong(1, id);
+            return ps.executeUpdate() == 1;
+        }
+    }
+
+    @SneakyThrows
+    public boolean updateById(User user) {
+        Objects.requireNonNull(user);
+        try (PreparedStatement ps = conn.prepareStatement("update user set name=?,gender=?,age=? where id=?")) {
+            ps.setString(1, user.getName());
+            ps.setInt(2, user.getGender());
+            ps.setInt(3, user.getAge());
+            ps.setLong(4, user.getId());
+            return ps.executeUpdate() == 1;
+        }
+    }
+
+    @SneakyThrows
+    public boolean saveBatch(Collection<User> users) {
+        if (CollectionUtils.isEmpty(users)) {
+            return false;
+        }
+        try {
+            conn.setAutoCommit(false);
+            for (User user : users) {
+                save(user);
+            }
+            conn.commit();
+        } catch (SQLException e) {
+            conn.rollback();
+            e.printStackTrace();
+        } finally {
+            conn.setAutoCommit(true);
+        }
+        return true;
+    }
+
+    @SneakyThrows
+    public boolean saveBatch2(Collection<User> users) {
+        if (CollectionUtils.isEmpty(users)) {
+            return false;
+        }
+        try {
+            conn.setAutoCommit(false);
+            String sql = "insert into user(name, gender, age) values(?,?,?)";
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                for (User user : users) {
+                    ps.setString(1, user.getName());
+                    ps.setInt(2, user.getGender());
+                    ps.setInt(3, user.getAge());
+                    ps.addBatch();
+                }
+                ps.executeBatch();
+                conn.commit();
+            }
+        } catch (SQLException e) {
+            conn.rollback();
+            e.printStackTrace();
+        } finally {
+            conn.setAutoCommit(true);
+        }
+        return true;
+    }
+
+    @SneakyThrows
+    @Override
+    public void close() {
+        if (Objects.nonNull(conn)) {
+            conn.close();
+        }
+    }
+}
+```
+
 3. 配置 Hikari 连接池，改进上述操作。提交代码到 Github。
+
+项目地址：[hikari-demo](exercise/hikari-demo)
+
+关键类：
+
+```java
+package com.switchvov.hikari.demo.domain;
+
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+import lombok.SneakyThrows;
+import org.springframework.util.CollectionUtils;
+
+import javax.sql.DataSource;
+import java.io.Closeable;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Collection;
+import java.util.Objects;
+
+/**
+ * @author switch
+ * @since 2021/4/28
+ */
+public class UserHikariOperation {
+    private final DataSource dataSource;
+
+    public UserHikariOperation() {
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl("jdbc:mysql://localhost/test?useUnicode=true&characterEncoding=utf8");
+        config.setUsername("root");
+        config.setPassword("root");
+        config.addDataSourceProperty("cachePrepStmts", "true");
+        config.addDataSourceProperty("prepStmtCacheSize", "250");
+        config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+        dataSource = new HikariDataSource(config);
+    }
+
+    @SneakyThrows
+    public User getById(Long id) {
+        User user = null;
+        Connection connection = getConnection();
+        try (PreparedStatement ps = connection.prepareStatement("select * from user where id = ?")) {
+            ps.setLong(1, id);
+            try (ResultSet resultSet = ps.executeQuery()) {
+                if (resultSet.next()) {
+                    user = new User()
+                            .setId(resultSet.getLong("id"))
+                            .setName(resultSet.getString("name"))
+                            .setGender(resultSet.getInt("gender"))
+                            .setAge(resultSet.getInt("age"));
+                }
+            }
+        }
+        connection.close();
+        return user;
+    }
+
+    @SneakyThrows
+    public boolean save(User user) {
+        Objects.requireNonNull(user);
+        String sql = "insert into user(name, gender, age) values(?,?,?)";
+        if (Objects.nonNull(user.getId())) {
+            sql = "insert into user(name, gender, age, id) values(?,?,?,?)";
+        }
+        Connection connection = getConnection();
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            if (Objects.nonNull(user.getId())) {
+                ps.setLong(4, user.getId());
+            }
+            ps.setString(1, user.getName());
+            ps.setInt(2, user.getGender());
+            ps.setInt(3, user.getAge());
+            boolean execute = ps.execute();
+            connection.close();
+            return execute;
+        }
+    }
+
+    @SneakyThrows
+    public boolean deleteById(Long id) {
+        Connection connection = getConnection();
+        try (PreparedStatement ps = connection.prepareStatement("delete from user where id = ?")) {
+            ps.setLong(1, id);
+            boolean deleted = ps.executeUpdate() == 1;
+            connection.close();
+            return deleted;
+        }
+    }
+
+    @SneakyThrows
+    public boolean updateById(User user) {
+        Objects.requireNonNull(user);
+        Connection connection = getConnection();
+        try (PreparedStatement ps = connection.prepareStatement("update user set name=?,gender=?,age=? where id=?")) {
+            ps.setString(1, user.getName());
+            ps.setInt(2, user.getGender());
+            ps.setInt(3, user.getAge());
+            ps.setLong(4, user.getId());
+            boolean updated = ps.executeUpdate() == 1;
+            connection.close();
+            return updated;
+        }
+    }
+
+    @SneakyThrows
+    public boolean saveBatch(Collection<User> users) {
+        if (CollectionUtils.isEmpty(users)) {
+            return false;
+        }
+        Connection connection = getConnection();
+        try {
+            connection.setAutoCommit(false);
+            for (User user : users) {
+                save(user);
+            }
+            connection.commit();
+        } catch (SQLException e) {
+            connection.rollback();
+            e.printStackTrace();
+        } finally {
+            connection.setAutoCommit(true);
+            connection.close();
+        }
+        return true;
+    }
+
+    @SneakyThrows
+    public boolean saveBatch2(Collection<User> users) {
+        if (CollectionUtils.isEmpty(users)) {
+            return false;
+        }
+        Connection connection = getConnection();
+        try {
+            connection.setAutoCommit(false);
+            String sql = "insert into user(name, gender, age) values(?,?,?)";
+            try (PreparedStatement ps = connection.prepareStatement(sql)) {
+                for (User user : users) {
+                    ps.setString(1, user.getName());
+                    ps.setInt(2, user.getGender());
+                    ps.setInt(3, user.getAge());
+                    ps.addBatch();
+                }
+                ps.executeBatch();
+                connection.commit();
+            }
+        } catch (SQLException e) {
+            connection.rollback();
+            e.printStackTrace();
+        } finally {
+            connection.setAutoCommit(true);
+            connection.close();
+        }
+        return true;
+    }
+
+    private Connection getConnection() throws SQLException {
+        return dataSource.getConnection();
+    }
+}
+```
 
 **附加题（可以后面上完数据库的课再考虑做）：**
 

@@ -1,0 +1,2 @@
+# 通过SPI的方式注入驱动
+com.mysql.cj.jdbc.Driver

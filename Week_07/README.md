@@ -14,11 +14,14 @@
 - 磁盘：512GB PCI SSD
 
 | 插入数据方式 | 时间(s) |
-| :---: | :---: |
+| :--- | :---: |
 | Navicat批量导入 | 59.17 |
-| | |
-| | |
-| | |
+| statement单条插入 | 3745 |
+| preparedStatement单条插入 | 3573 |
+| preparedStatement批量插入 | 2102 |
+| preparedStatement单条SQL批量插入 | 34.11 |
+| preparedStatement单条SQL批量插入无索引 | 16.56 |
+| preparedStatement单条SQL批量插入无索引无创建时间 | 16.12 |
 
 **3.（选做）** 按自己设计的表结构，插入 1000 万订单模拟数据，测试不同方式的插入效
 

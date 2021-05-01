@@ -1,0 +1,62 @@
+version: '3'
+
+networks:
+  mysql_ms:
+    ipam:
+      config:
+        - subnet: 192.168.49.0/24
+# 参考：https://hub.docker.com/_/mysql
+# 参考：https://juejin.cn/post/6844904136115388423
+services:
+  mysql_master:
+    image: mysql:8.0.24
+    command: [mysqld, --character-set-server=utf8mb4, --collation-server=utf8mb4_unicode_ci, --default-authentication-plugin=mysql_native_password]
+    expose:
+      - 13300
+    ports:
+      - "13300:3306"
+    user: mysql:mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - "./config/13300:/etc/mysql/conf.d"
+      - "./data/13300:/var/lib/mysql"
+    networks:
+      mysql_ms:
+        ipv4_address: 192.168.49.100
+  mysql_slave1:
+    image: mysql:8.0.24
+    command: [mysqld, --character-set-server=utf8mb4, --collation-server=utf8mb4_unicode_ci, --default-authentication-plugin=mysql_native_password]
+    expose:
+      - 23300
+    ports:
+      - "23300:3306"
+    user: 'mysql:mysql'
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - "./config/23300:/etc/mysql/conf.d"
+      - "./data/23300:/var/lib/mysql"
+    networks:
+      mysql_ms:
+        ipv4_address: 192.168.49.101
+    depends_on:
+      - mysql_master
+  mysql_slave2:
+    image: mysql:8.0.24
+    command: [mysqld, --character-set-server=utf8mb4, --collation-server=utf8mb4_unicode_ci, --default-authentication-plugin=mysql_native_password]
+    expose:
+      - 33300
+    ports:
+      - "33300:3306"
+    user: 'mysql:mysql'
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - "./config/33300:/etc/mysql/conf.d"
+      - "./data/33300:/var/lib/mysql"
+    networks:
+      mysql_ms:
+        ipv4_address: 192.168.49.102
+    depends_on:
+      - mysql_master

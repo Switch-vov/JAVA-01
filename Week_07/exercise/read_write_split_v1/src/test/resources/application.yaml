@@ -1,0 +1,78 @@
+spring:
+  datasource:
+    multi:
+      hikari:
+        master:
+          jdbc-url: jdbc:mysql://localhost:13300/test?serverTimezone=Asia/Shanghai
+          username: root
+          password: root
+          driver-class-name: com.mysql.cj.jdbc.Driver
+          pool-name: master
+          minimum-idle: 5
+          maximum-pool-size: 100
+          auto-commit: true
+          connection-test-query: SELECT 1
+          connection-timeout: 3000
+          validation-timeout: 2000
+          idle-timeout: 60000
+          max-lifetime: 1800000
+          connection-init-sql: "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci;"
+          data-source-properties:
+            serverTimezone: GMT+8
+            useTimezone: true
+            zeroDateTimeBehavior: round
+            characterEncoding: utf8
+            cachePrepStmts: true
+            prepStmtCacheSize: 128
+            prepStmtCacheSqlLimit: 1024
+            useSSL: false
+            useUnicode: true
+        slaves:
+          - jdbc-url: jdbc:mysql://localhost:23300/test?serverTimezone=Asia/Shanghai
+            username: root
+            password: root
+            driver-class-name: com.mysql.cj.jdbc.Driver
+            pool-name: slave1
+            minimum-idle: 5
+            maximum-pool-size: 100
+            auto-commit: true
+            connection-test-query: SELECT 1
+            connection-timeout: 3000
+            validation-timeout: 2000
+            idle-timeout: 60000
+            max-lifetime: 1800000
+            connection-init-sql: "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci;"
+            data-source-properties:
+              serverTimezone: GMT+8
+              useTimezone: true
+              zeroDateTimeBehavior: round
+              characterEncoding: utf8
+              cachePrepStmts: true
+              prepStmtCacheSize: 128
+              prepStmtCacheSqlLimit: 1024
+              useSSL: false
+              useUnicode: true
+          - jdbc-url: jdbc:mysql://localhost:33300/test?serverTimezone=Asia/Shanghai
+            username: root
+            password: root
+            driver-class-name: com.mysql.cj.jdbc.Driver
+            pool-name: slave2
+            minimum-idle: 5
+            maximum-pool-size: 100
+            auto-commit: true
+            connection-test-query: SELECT 1
+            connection-timeout: 3000
+            validation-timeout: 2000
+            idle-timeout: 60000
+            max-lifetime: 1800000
+            connection-init-sql: "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci;"
+            data-source-properties:
+              serverTimezone: GMT+8
+              useTimezone: true
+              zeroDateTimeBehavior: round
+              characterEncoding: utf8
+              cachePrepStmts: true
+              prepStmtCacheSize: 128
+              prepStmtCacheSqlLimit: 1024
+              useSSL: false
+              useUnicode: true

@@ -1,0 +1,15 @@
+version: '3'
+
+services: 
+  shardingsphere_proxy:
+    image: apache/shardingsphere-proxy:5.0.0-RC1-SNAPSHOT
+    expose: 
+      - 3308
+    ports: 
+      - 3308:3308
+    environment: 
+      PORT: 3308
+      JVM_OPTS: "-Djava.awt.headless=true"
+    volumes: 
+      - "./conf:/opt/shardingsphere-proxy/conf"
+      - "./ext-lib:/opt/shardingsphere-proxy/ext-lib"

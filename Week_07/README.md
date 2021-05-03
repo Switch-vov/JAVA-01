@@ -97,8 +97,43 @@ public class MultiDataSourceAspect {
 }
 ```
 
-
 **3.（必做）** 读写分离 - 数据库框架版本 2.0
+
+V2.0代码：[read_write_split_v2](exercise/read_write_split_v2)
+
+关键配置：
+
+```yaml
+spring:
+  shardingsphere:
+    datasource:
+      names: master,slave1,slave2
+      common:
+        type: com.zaxxer.hikari.HikariDataSource
+        driver-class-name: com.mysql.jdbc.Driver
+        username: root
+        password: root
+      master:
+        jdbc-url: jdbc:mysql://localhost:13300/test?serverTimezone=Asia/Shanghai
+      slave1:
+        jdbc-url: jdbc:mysql://localhost:23300/test?serverTimezone=Asia/Shanghai
+      slave2:
+        jdbc-url: jdbc:mysql://localhost:33300/test?serverTimezone=Asia/Shanghai
+    rules:
+      replica-query:
+        data-sources:
+          readwrite:
+            load-balancer-name: roundrobin # 负载均衡算法名称
+            primary-data-source-name: master # 主数据源名称
+            replica-data-source-names: slave1,slave2 # 从数据源名称，多个从数据源用逗号分隔
+        load-balancers:
+          roundrobin:
+            type: ROUND_ROBIN # 负载均衡算法类型
+            props:
+              name: switch
+    props:
+      sql-show: true
+```
 
 **4.（选做）** 读写分离 - 数据库中间件版本 3.0
 

@@ -123,6 +123,28 @@ rules:
 
 **2.（必做）** 基于 hmily TCC 或 ShardingSphere 的 Atomikos XA 实现一个简单的分布式事务应用 demo（二选一），提交到 Github。
 
+1. 使用SharingSphere Proxy
+    - Proxy搭建地址：[proxy](exercise/proxy)
+    - 更改：[server.yaml](exercise/proxy/conf/server.yaml)
+```yaml
+users:
+  - root@%:root
+
+props:
+  max-connections-size-per-query: 1
+  executor-size: 16  # Infinite by default.
+  proxy-frontend-flush-threshold: 128  # The default value is 128.
+    # LOCAL: Proxy will run with LOCAL transaction.
+    # XA: Proxy will run with XA transaction.
+    # BASE: Proxy will run with B.A.S.E transaction.
+  proxy-transaction-type: XA
+  proxy-opentracing-enabled: false
+  xa-transaction-manager-type: Atomikos
+  sql-show: true
+  sql-simple: false
+```
+2. TODO：使用SharingSphere JDBC的demo
+
 **3.（选做）** 基于 ShardingSphere narayana XA 实现一个简单的分布式事务 demo。
 
 **4.（选做）** 基于 seata 框架实现 TCC 或 AT 模式的分布式事务 demo。

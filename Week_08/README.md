@@ -144,6 +144,7 @@ props:
   sql-simple: false
 ```
 2. TODO：使用SharingSphere JDBC的demo
+   - 会参考 [ShardingSphere RAW JDBC 分布式事务XA 代码示例](https://blog.csdn.net/github_35735591/article/details/110734467) 搭建
 
 **3.（选做）** 基于 ShardingSphere narayana XA 实现一个简单的分布式事务 demo。
 

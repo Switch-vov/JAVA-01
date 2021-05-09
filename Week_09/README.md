@@ -9,7 +9,48 @@
 **3.（必做）** 改造自定义 RPC 的程序，提交到 GitHub：
 
 - 尝试将服务端写死查找接口实现类变成泛型和反射；
+
+```java
+public class DemoResolver implements RpcfxResolver, ApplicationContextAware {
+    private ApplicationContext applicationContext;
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
+    }
+    
+    @Override
+    @SneakyThrows
+    public <T> T resolve(String serviceClass) {
+        Class<T> clazz = (Class<T>) this.getClass().getClassLoader().loadClass(serviceClass);
+        return this.applicationContext.getBean(clazz);
+    }
+}
+```
+
 - 尝试将客户端动态代理改成 AOP，添加异常处理；
+  
+```java
+@Aspect
+@Component
+public class ReferencedAspect {
+    @Before("execution(* io.kimmking.rpcfx.demo.consumer..*.*(..))")
+    public void setReference(JoinPoint joinPoint) throws Exception {
+        Object target = joinPoint.getTarget();
+        Field[] fields = target.getClass().getDeclaredFields();
+        for (Field field : fields) {
+            Reference reference = field.getAnnotation(Reference.class);
+            if (reference != null) {
+                field.setAccessible(true);
+                if (field.get(target) == null) {
+                    field.set(target, Rpcfx.create(field.getType(), reference.url()));
+                }
+            }
+        }
+    }
+}
+```
+
 - 尝试使用 Netty+HTTP 作为 client 端传输方式。
 
 **4.（选做☆☆）** 升级自定义 RPC 的程序：

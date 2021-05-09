@@ -17,10 +17,10 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 public class TestController {
-    @Reference(url = "http://localhost:8080/")
+    @Reference(url = "http://localhost:8081/")
     private UserService userService;
 
-    @Reference(url = "http://localhost:8080/")
+    @Reference(url = "http://localhost:8081/")
     private OrderService orderService;
 
     @RequestMapping("/test")

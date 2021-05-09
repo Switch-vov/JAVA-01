@@ -53,6 +53,92 @@ public class ReferencedAspect {
 
 - 尝试使用 Netty+HTTP 作为 client 端传输方式。
 
+    - `io.kimmking.rpcfx.demo.provider.RpcfxServerApplication.main`
+```java
+        EventLoopGroup bossGroup = new NioEventLoopGroup(1);
+        EventLoopGroup workerGroup = new NioEventLoopGroup(10);
+
+        ConfigurableApplicationContext context = SpringApplication.run(RpcfxServerApplication.class, args);
+
+        RpcfxInvoker rpcfxInvoker = context.getBean(RpcfxInvoker.class);
+
+        try {
+            ServerBootstrap serverBootstrap = new ServerBootstrap();
+            serverBootstrap.group(bossGroup, workerGroup)
+                    .channel(NioServerSocketChannel.class)
+                    .childHandler(new DemoServerInitializer(rpcfxInvoker));
+            ChannelFuture channelFuture = serverBootstrap.bind(8081).sync();
+            channelFuture.channel().closeFuture().sync();
+
+        } finally {
+            bossGroup.shutdownGracefully();
+            workerGroup.shutdownGracefully();
+        }
+```
+
+```java
+public class DemoServerInitializer extends ChannelInitializer<SocketChannel> {
+    private final RpcfxInvoker rpcfxInvoker;
+
+    public DemoServerInitializer(RpcfxInvoker rpcfxInvoker) {
+        this.rpcfxInvoker = rpcfxInvoker;
+    }
+
+    @Override
+    protected void initChannel(SocketChannel ch) throws Exception {
+        // 向管道加入处理器
+        ChannelPipeline pipeline = ch.pipeline();
+        
+        // 1. HttpServerCodec 是netty 提供的处理http的 编-解码器
+        pipeline.addLast("httpServerCodec", new HttpServerCodec());
+        // 2.聚合 http header and http content
+        pipeline.addLast("httpObjectAggregator", new HttpObjectAggregator(10 * 1024 * 1024));
+        // 3. 增加一个自定义的handler
+        pipeline.addLast("httpServerHandler", new DemoHttpServerHandler(rpcfxInvoker));
+    }
+}
+```
+
+```java
+@Slf4j
+public class DemoHttpServerHandler extends SimpleChannelInboundHandler<HttpObject> {
+    private final RpcfxInvoker rpcfxInvoker;
+
+    public DemoHttpServerHandler(RpcfxInvoker rpcfxInvoker) {
+        this.rpcfxInvoker = rpcfxInvoker;
+    }
+
+    @Override
+    protected void channelRead0(ChannelHandlerContext ctx, HttpObject msg) throws Exception {
+        // 判断 msg 是不是 HttpRequest 请求
+        if (msg instanceof FullHttpRequest) {
+            FullHttpRequest httpRequest = (FullHttpRequest) msg;
+            // 获取uri, 过滤指定的资源
+            URI uri = new URI(httpRequest.uri());
+            if ("/favicon.ico".equals(uri.getPath())) {
+                log.info("请求了 favicon.ico, 不做响应");
+                return;
+            }
+
+            // 构建 RpcfxRequest 请求对象
+            String requestBody = httpRequest.content().toString(CharsetUtil.UTF_8);
+            RpcfxRequest rpcfxRequest = JSON.parseObject(requestBody, RpcfxRequest.class);
+
+            // 调用实际方法
+            RpcfxResponse rpcfxResponse = rpcfxInvoker.invoke(rpcfxRequest);
+
+            //构造 http 响应
+            String responseBody = JSON.toJSONString(rpcfxResponse);
+            ByteBuf content = Unpooled.copiedBuffer(responseBody, CharsetUtil.UTF_8);
+            FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, content);
+            response.headers().set(HttpHeaderNames.CONTENT_TYPE, "application/json; charset=utf-8");
+            response.headers().set(HttpHeaderNames.CONTENT_LENGTH, content.readableBytes());
+            ctx.writeAndFlush(response);
+        }
+    }
+}
+```
+
 **4.（选做☆☆）** 升级自定义 RPC 的程序：
 
 - 尝试使用压测并分析优化 RPC 性能；

@@ -1,13 +1,18 @@
 package io.kimmking.rpcfx.demo.provider;
 
-import com.alibaba.fastjson.JSON;
 import io.kimmking.rpcfx.api.RpcfxRequest;
 import io.kimmking.rpcfx.api.RpcfxResolver;
 import io.kimmking.rpcfx.api.RpcfxResponse;
 import io.kimmking.rpcfx.api.ServiceProviderDesc;
 import io.kimmking.rpcfx.demo.api.OrderService;
 import io.kimmking.rpcfx.demo.api.UserService;
+import io.kimmking.rpcfx.demo.provider.netty.DemoServerInitializer;
 import io.kimmking.rpcfx.server.RpcfxInvoker;
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -16,14 +21,13 @@ import org.apache.zookeeper.CreateMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.net.InetAddress;
-import java.net.InterfaceAddress;
-import java.net.UnknownHostException;
 
 @SpringBootApplication
 @RestController
@@ -32,23 +36,42 @@ public class RpcfxServerApplication {
     public static void main(String[] args) throws Exception {
 
         // start zk client
-        RetryPolicy retryPolicy = new ExponentialBackoffRetry(1000, 3);
-        CuratorFramework client = CuratorFrameworkFactory.builder().connectString("localhost:2181").namespace("rpcfx").retryPolicy(retryPolicy).build();
-        client.start();
+//        RetryPolicy retryPolicy = new ExponentialBackoffRetry(1000, 3);
+//        CuratorFramework client = CuratorFrameworkFactory.builder()
+//                .connectString("localhost:2181").namespace("rpcfx").retryPolicy(retryPolicy).build();
+//        client.start();
 
 
         // register service
         // xxx "io.kimmking.rpcfx.demo.api.UserService"
 
-        String userService = "io.kimking.rpcfx.demo.api.UserService";
-        registerService(client, userService);
-        String orderService = "io.kimking.rpcfx.demo.api.OrderService";
-        registerService(client, orderService);
+//        String userService = "io.kimking.rpcfx.demo.api.UserService";
+//        registerService(client, userService);
+//        String orderService = "io.kimking.rpcfx.demo.api.OrderService";
+//        registerService(client, orderService);
 
 
         // 进一步的优化，是在spring加载完成后，从里面拿到特定注解的bean，自动注册到zk
 
-        SpringApplication.run(RpcfxServerApplication.class, args);
+        EventLoopGroup bossGroup = new NioEventLoopGroup(1);
+        EventLoopGroup workerGroup = new NioEventLoopGroup(10);
+
+        ConfigurableApplicationContext context = SpringApplication.run(RpcfxServerApplication.class, args);
+
+        RpcfxInvoker rpcfxInvoker = context.getBean(RpcfxInvoker.class);
+
+        try {
+            ServerBootstrap serverBootstrap = new ServerBootstrap();
+            serverBootstrap.group(bossGroup, workerGroup)
+                    .channel(NioServerSocketChannel.class)
+                    .childHandler(new DemoServerInitializer(rpcfxInvoker));
+            ChannelFuture channelFuture = serverBootstrap.bind(8081).sync();
+            channelFuture.channel().closeFuture().sync();
+
+        } finally {
+            bossGroup.shutdownGracefully();
+            workerGroup.shutdownGracefully();
+        }
     }
 
     private static void registerService(CuratorFramework client, String service) throws Exception {

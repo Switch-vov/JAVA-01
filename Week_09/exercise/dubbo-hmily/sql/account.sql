@@ -47,4 +47,8 @@ CREATE TABLE `hmily_account_freeze`.`account_freeze`
 INSERT INTO `hmily_account_a`.`account`(id, user_id, cny, usd)
 VALUES (1, 'UA00001', 0, 10000);
 INSERT INTO `hmily_account_b`.`account`(id, user_id, cny, usd)
-VALUES (1, 'UB00001', 10000, 0);
+VALUES (1, 'UB00001', 0, 0);
+INSERT INTO `hmily_account_freeze`.`account_freeze`(id, user_id, cny, usd)
+VALUES (1, 'UA00001', 0, 0);
+INSERT INTO `hmily_account_freeze`.`account_freeze`(id, user_id, cny, usd)
+VALUES (2, 'UB00001', 0, 0);

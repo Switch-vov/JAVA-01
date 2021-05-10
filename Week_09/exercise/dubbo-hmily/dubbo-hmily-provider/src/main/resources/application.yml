@@ -1,9 +1,98 @@
 server:
   port: 8091
-  
+
 spring:
   application:
     name: dubbo-hmily-provider
+  datasource:
+    hmily-account-a:
+      driverClassName: com.mysql.jdbc.Driver
+      jdbc-url: jdbc:mysql://localhost:3306/hmily_account_a?serverTimezone=Asia/Shanghai
+      username: root
+      password: root
+      type: com.zaxxer.hikari.HikariDataSource
+      sql-script-encoding: UTF-8
+      pool-name: hmily_account_a-hikariCP
+      minimum-idle: 5
+      maximum-pool-size: 100
+      auto-commit: true
+      connection-test-query: SELECT 1
+      connectionTimeout: 3000
+      validation-timeout: 2000
+      idle-timeout: 60000
+      max-lifetime: 1800000
+      max-wait: 1000
+      driver-class-name: com.mysql.jdbc.Driver
+      connection-init-sql: "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci;"
+      data-source-properties:
+        serverTimezone: GMT+8
+        useTimezone: true
+        zeroDateTimeBehavior: round
+        characterEncoding: utf8
+        cachePrepStmts: true
+        prepStmtCacheSize: 128
+        prepStmtCacheSqlLimit: 1024
+        useSSL: false
+        useUnicode: true
+    hmily-account-b:
+      driverClassName: com.mysql.jdbc.Driver
+      jdbc-url: jdbc:mysql://localhost:3306/hmily_account_b?serverTimezone=Asia/Shanghai
+      username: root
+      password: root
+      type: com.zaxxer.hikari.HikariDataSource
+      sql-script-encoding: UTF-8
+      pool-name: hmily_account_b-hikariCP
+      minimum-idle: 5
+      maximum-pool-size: 100
+      auto-commit: true
+      connection-test-query: SELECT 1
+      connectionTimeout: 3000
+      validation-timeout: 2000
+      idle-timeout: 60000
+      max-lifetime: 1800000
+      max-wait: 1000
+      driver-class-name: com.mysql.jdbc.Driver
+      connection-init-sql: "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci;"
+      data-source-properties:
+        serverTimezone: GMT+8
+        useTimezone: true
+        zeroDateTimeBehavior: round
+        characterEncoding: utf8
+        cachePrepStmts: true
+        prepStmtCacheSize: 128
+        prepStmtCacheSqlLimit: 1024
+        useSSL: false
+        useUnicode: true
+    hmily-account-freeze:
+      driverClassName: com.mysql.jdbc.Driver
+      jdbc-url: jdbc:mysql://localhost:3306/hmily_account_freeze?serverTimezone=Asia/Shanghai
+      username: root
+      password: root
+      type: com.zaxxer.hikari.HikariDataSource
+      sql-script-encoding: UTF-8
+      pool-name: hmily_account_freeze-hikariCP
+      minimum-idle: 5
+      maximum-pool-size: 100
+      auto-commit: true
+      connection-test-query: SELECT 1
+      connectionTimeout: 3000
+      validation-timeout: 2000
+      idle-timeout: 60000
+      max-lifetime: 1800000
+      max-wait: 1000
+      driver-class-name: com.mysql.jdbc.Driver
+      connection-init-sql: "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci;"
+      data-source-properties:
+        serverTimezone: GMT+8
+        useTimezone: true
+        zeroDateTimeBehavior: round
+        characterEncoding: utf8
+        cachePrepStmts: true
+        prepStmtCacheSize: 128
+        prepStmtCacheSqlLimit: 1024
+        useSSL: false
+        useUnicode: true
+
 
 dubbo:
   scan:
@@ -24,3 +113,6 @@ dubbo:
     qos-port-compatible: 22222
     qos-accept-foreign-ip-compatible: true
     qos-host: localhost
+logging:
+  level:
+    com.switchvov.dubbo.hmily.provider.mapper: debug

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.switchvov.dubbo.hmily.provider.mapper.hmilyaccountfreeze.AccountFreezeMapper">
+    <resultMap id="BaseResultMap" type="com.switchvov.dubbo.hmily.common.domain.entity.Account">
+        <id property="id" column="id" jdbcType="BIGINT"/>
+        <result property="userId" column="user_id" jdbcType="VARCHAR"/>
+        <result property="cny" column="cny" jdbcType="DECIMAL"/>
+        <result property="usd" column="usd" jdbcType="DECIMAL"/>
+    </resultMap>
+    <sql id="BASE_SELECT_SQL">
+        <!--@sql select -->
+        id,user_id,cny, usd
+        <!--@sql from account_freeze; -->
+    </sql>
+
+    <update id="freeze">
+        UPDATE account_freeze
+        SET cny = cny + #{cny,jdbcType=DECIMAL}
+        WHERE user_id = #{userId,jdbcType=VARCHAR}
+    </update>
+
+    <update id="unfreeze">
+        UPDATE account_freeze
+        SET cny = cny - #{cny,jdbcType=DECIMAL}
+        WHERE user_id = #{userId,jdbcType=VARCHAR}
+          AND cny - #{cny,jdbcType=DECIMAL} >= 0
+    </update>
+</mapper>
